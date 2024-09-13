@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-09-26 15:10
  * @LastAuthor : Wang Chao
- * @LastTime   : 2024-09-13 23:24
+ * @LastTime   : 2024-09-13 23:36
  * @desc       : 
 -->
 <script setup>
@@ -67,7 +67,6 @@
     // const data = await table.getRecordIdListByPage({ pageSize: 200, pageToken: _pageToken }); // 获取所有记录 id
     const data = await view.getVisibleRecordIdListByPage({ pageSize: 200, pageToken: _pageToken }); // 获取所有记录 id
     const { total, hasMore, recordIds: recordIdsData, pageToken } = data;
-    console.log('🚀  recordIdsData:', recordIdsData);
     recordIds.push(...recordIdsData);
     if (hasMore) {
       await getAllRecordIdList(pageToken);
@@ -108,7 +107,6 @@
 
       if (!val) continue;
       const value = val[0]?.text || val;
-      console.log('🚀  value:', value);
       personList.value.push(value);
 
       // const area = find(val[0]?.text || val);
@@ -168,7 +166,6 @@
     }
 
     for (let i = 0; i < _arr.length; i++) {
-      console.log('🚀  _arr:', _arr);
       const fieldId = await table.addField({
         // 新增一个多行文本类型的字段
         type: FieldType.Text,
@@ -176,7 +173,6 @@
       });
       const _list = [];
       for (let j = 0; j < _arr[i].length; j++) {
-        console.log('🚀  j:', j, recordIds);
         _list.push({
           recordId: recordIds[j],
           fields: {
@@ -188,7 +184,6 @@
     }
 
     loading.value = false;
-    console.log('🚀  _arr:', _arr);
 
     return;
 
