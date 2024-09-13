@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-09-26 15:10
  * @LastAuthor : Wang Chao
- * @LastTime   : 2024-09-13 22:57
+ * @LastTime   : 2024-09-13 23:24
  * @desc       : 
 -->
 <script setup>
@@ -62,8 +62,12 @@
 
   async function getAllRecordIdList(_pageToken = 0) {
     const table = await base.getActiveTable();
-    const data = await table.getRecordIdListByPage({ pageSize: 200, pageToken: _pageToken }); // 获取所有记录 id
+    const view = await table.getActiveView();
+
+    // const data = await table.getRecordIdListByPage({ pageSize: 200, pageToken: _pageToken }); // 获取所有记录 id
+    const data = await view.getVisibleRecordIdListByPage({ pageSize: 200, pageToken: _pageToken }); // 获取所有记录 id
     const { total, hasMore, recordIds: recordIdsData, pageToken } = data;
+    console.log('🚀  recordIdsData:', recordIdsData);
     recordIds.push(...recordIdsData);
     if (hasMore) {
       await getAllRecordIdList(pageToken);
@@ -162,8 +166,28 @@
         );
       }
     }
-    console.log(personList.value);
 
+    for (let i = 0; i < _arr.length; i++) {
+      console.log('🚀  _arr:', _arr);
+      const fieldId = await table.addField({
+        // 新增一个多行文本类型的字段
+        type: FieldType.Text,
+        name: `团队 ${i + 1}`,
+      });
+      const _list = [];
+      for (let j = 0; j < _arr[i].length; j++) {
+        console.log('🚀  j:', j, recordIds);
+        _list.push({
+          recordId: recordIds[j],
+          fields: {
+            [fieldId]: _arr[i][j],
+          },
+        });
+      }
+      await table.setRecords(_list);
+    }
+
+    loading.value = false;
     console.log('🚀  _arr:', _arr);
 
     return;
