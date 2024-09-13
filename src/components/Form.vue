@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-09-26 15:10
  * @LastAuthor : Wang Chao
- * @LastTime   : 2024-09-09 15:02
+ * @LastTime   : 2024-09-13 22:57
  * @desc       : 
 -->
 <script setup>
@@ -51,30 +51,7 @@
   });
 
   async function confirm() {
-    if (!fieldId.value) {
-      ElMessage({
-        type: 'error',
-        message: t('Please select the mobile phone number column'),
-      });
-      return;
-    }
-
-    if (!dateFormat.value) {
-      ElMessage({
-        type: 'error',
-        message: t('Please select the location format of your mobile phone number'),
-      });
-      return;
-    }
-
-    if (!operatorId.value) {
-      ElMessage({
-        type: 'error',
-        message: t('Please select the operator column'),
-      });
-      return;
-    }
-
+    // debugger;
     generateBirthdayRow();
   }
 
@@ -105,6 +82,8 @@
     }
   }
 
+  const personList = ref([]);
+
   /**
    * @desc  : 生成手机号码所属地列
    */
@@ -112,7 +91,7 @@
     loading.value = true;
 
     const table = await base.getActiveTable();
-    const field = await table.getField(areaId.value); // 选择某个多行文本字段
+    // const field = await table.getField(areaId.value); // 选择某个多行文本字段
 
     await getAllRecordList();
     await getAllRecordIdList();
@@ -124,20 +103,70 @@
       const val = await cell.val;
 
       if (!val) continue;
+      const value = val[0]?.text || val;
+      console.log('🚀  value:', value);
+      personList.value.push(value);
 
-      const area = find(val[0]?.text || val);
+      // const area = find(val[0]?.text || val);
 
-      let format = !['无', 'none', 'なし'].includes(dateFormat.value) ? dateFormat.value : '';
+      // let format = !['无', 'none', 'なし'].includes(dateFormat.value) ? dateFormat.value : '';
 
-      // 根据手机号码获取手机号码所属地
-      _list.push({
-        recordId: recordIds[index],
-        fields: {
-          [field.id]: area.province ? area.province + format + area.city : `【${t('Wrong format of phone number')}】`,
-          [operatorId.value]: area.op !== '异常' ? area.op : `【${t('Wrong format of phone number')}】`,
-        },
-      });
+      // // 根据手机号码获取手机号码所属地
+      // _list.push({
+      //   recordId: recordIds[index],
+      //   fields: {
+      //     [field.id]: area.province ? area.province + format + area.city : `【${t('Wrong format of phone number')}】`,
+      //     [operatorId.value]: area.op !== '异常' ? area.op : `【${t('Wrong format of phone number')}】`,
+      //   },
+      // });
     }
+
+    const _arr = [];
+
+    if (groupRule.value === 1) {
+      // 根据小组数量分组
+      const n = Math.floor(personList.value.length / groupNumber.value); // 每组至少多少人
+      const remainder = personList.value.length % groupNumber.value; // 多余的几个人
+
+      for (let i = 0; i < groupNumber.value; i++) {
+        if (i < remainder) {
+          // 前 remainder 组分配 n+1 个人
+          _arr.push(
+            isSelectLeader.value
+              ? personList.value
+                  .slice(i * (n + 1), (i + 1) * (n + 1))
+                  .map((item, index) => (index === 0 ? item + '【组长】' : item))
+              : personList.value.slice(i * (n + 1), (i + 1) * (n + 1)),
+          );
+        } else {
+          // 剩余组分配 n 个人
+          const startIdx = i * n + remainder;
+          const endIdx = startIdx + n;
+          _arr.push(
+            isSelectLeader.value
+              ? personList.value.slice(startIdx, endIdx).map((item, index) => (index === 0 ? item + '【组长】' : item))
+              : personList.value.slice(startIdx, endIdx),
+          );
+        }
+      }
+    } else if (groupRule.value === 2) {
+      // 根据每组人数分组
+      const n = groupNumber.value; // 每组人数
+      const groupCount = Math.ceil(personList.value.length / n); // 组数
+
+      for (let i = 0; i < groupCount; i++) {
+        _arr.push(
+          isSelectLeader.value
+            ? personList.value.slice(i * n, (i + 1) * n).map((item, index) => (index === 0 ? item + '【组长】' : item))
+            : personList.value.slice(i * n, (i + 1) * n),
+        );
+      }
+    }
+    console.log(personList.value);
+
+    console.log('🚀  _arr:', _arr);
+
+    return;
 
     await table.setRecords(_list);
 
@@ -149,6 +178,15 @@
   }
 
   const operatorId = ref();
+
+  // 分组规则
+  const groupRule = ref(1);
+
+  // 分组数量
+  const groupNumber = ref(1);
+
+  // 选择小组长
+  const isSelectLeader = ref(false);
 </script>
 
 <template>
@@ -167,7 +205,7 @@
           clearable
         >
           <el-option
-            v-for="item in fieldOptions?.filter((item) => item.value !== areaId && item.value !== operatorId)"
+            v-for="item in fieldOptions"
             :key="item.value"
             :label="item.label"
             :value="item.value"
@@ -177,61 +215,42 @@
     </div>
 
     <div class="line">
-      <div class="title top">{{ $t('Belonging to the region') }}</div>
+      <div class="title top">分组规则</div>
       <div>
-        <el-select
-          filterable
-          v-model="areaId"
-          :placeholder="$t('Please select your location')"
-          size="large"
-          clearable
-        >
-          <el-option
-            v-for="item in fieldOptions?.filter((item) => item.value !== fieldId && item.value !== operatorId)"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
+        <el-radio-group v-model="groupRule">
+          <el-radio
+            size="large"
+            :label="1"
+            >小组数量</el-radio
+          >
+          <el-radio
+            size="large"
+            :label="2"
+            >每组人数</el-radio
+          >
+        </el-radio-group>
       </div>
     </div>
 
     <div class="line">
-      <div class="title top">{{ $t('Domicile format') }}</div>
+      <div class="title top">分组数量</div>
       <div>
-        <el-select
-          v-model="dateFormat"
-          :placeholder="$t('Please select the location format')"
+        <el-input-number
+          v-model="groupNumber"
+          :min="1"
+          controls-position="right"
           size="large"
-          clearable
-        >
-          <el-option
-            v-for="item in dateFormatList"
-            :key="item.value"
-            :label="$t(item.name)"
-            :value="$t(item.value)"
-          />
-        </el-select>
+        />
       </div>
     </div>
 
     <div class="line">
-      <div class="title top">{{ $t('Operator') }}</div>
+      <div class="title top">选择组长</div>
       <div>
-        <el-select
-          filterable
-          v-model="operatorId"
-          :placeholder="$t('Please select the operator column')"
+        <el-switch
+          v-model="isSelectLeader"
           size="large"
-          clearable
-        >
-          <el-option
-            v-for="item in fieldOptions?.filter((item) => item.value !== fieldId && item.value !== areaId)"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
+        />
       </div>
     </div>
 

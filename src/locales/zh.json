@@ -1,10 +1,10 @@
 {
   "title": "标题",
-  "Please select the mobile phone number column": "请选择手机号码",
+  "Please select the mobile phone number column": "请选择人员",
   "Please select the location format of your mobile phone number": "请选择手机号码所属地格式",
   "Wrong format of phone number": "手机号码格式错误",
   "Data processing completed": "数据处理完成",
-  "Mobile phone number column": "手机号码",
+  "Mobile phone number column": "人员",
   "Belonging to the region": "所属地",
   "Please select your location": "请选择所属地",
   "Domicile format": "所属地格式",
