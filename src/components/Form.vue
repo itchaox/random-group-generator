@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-09-26 15:10
  * @LastAuthor : Wang Chao
- * @LastTime   : 2024-09-14 10:02
+ * @LastTime   : 2024-09-14 10:18
  * @desc       : 
 -->
 <script setup>
@@ -120,9 +120,11 @@
     for (let index = 0; index < recordList.length; index++) {
       const cell = await _field.getCell(recordList[index]?.id);
       const val = await cell.val;
+      console.log('🚀  val:', val);
 
       if (!val) continue;
-      const value = val[0]?.text || val[0]?.name || val;
+      const value =
+        val[0]?.text || (['zh', 'zh-TW', 'zh-HK'].includes(lang.value) ? val[0]?.name : val[0]?.enName) || val;
       personList.value.push(value);
     }
 
