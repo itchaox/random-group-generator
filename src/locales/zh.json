@@ -1,21 +1,13 @@
 {
-  "title": "标题",
   "Please select the mobile phone number column": "请选择人员",
-  "Please select the location format of your mobile phone number": "请选择手机号码所属地格式",
-  "Wrong format of phone number": "手机号码格式错误",
   "Data processing completed": "数据处理完成",
   "Mobile phone number column": "人员",
-  "Belonging to the region": "所属地",
-  "Please select your location": "请选择所属地",
-  "Domicile format": "所属地格式",
-  "Please select the location format": "请选择所属地格式",
   "run": "运行",
   "none": "无",
-  "t1": "格式: 广东深圳",
-  "t2": "格式: 广东-深圳",
-  "t3": "格式: 广东_深圳",
-  "t4": "格式: 广东/深圳",
   "loading": "加载中...",
-  "Operator": "运营商",
-  "Please select the operator column": "请选择运营商"
+  "fen-zu-gui-ze": "分组规则",
+  "xiao-zu-shu-liang": "小组数量",
+  "mei-zu-ren-shu": "每组人数",
+  "fen-zu-shu-liang": "分组数量",
+  "xuan-ze-zu-chang": "选择组长"
 }

@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-09-26 15:10
  * @LastAuthor : Wang Chao
- * @LastTime   : 2024-09-14 09:43
+ * @LastTime   : 2024-09-14 09:50
  * @desc       : 
 -->
 <script setup>
@@ -231,25 +231,25 @@
     </div>
 
     <div class="line">
-      <div class="title top">分组规则</div>
+      <div class="title top">{{ $t('fen-zu-gui-ze') }}</div>
       <div>
         <el-radio-group v-model="groupRule">
           <el-radio
             size="large"
             :label="1"
-            >小组数量</el-radio
+            >{{ $t('xiao-zu-shu-liang') }}</el-radio
           >
           <el-radio
             size="large"
             :label="2"
-            >每组人数</el-radio
+            >{{ $t('mei-zu-ren-shu') }}</el-radio
           >
         </el-radio-group>
       </div>
     </div>
 
     <div class="line">
-      <div class="title top">分组数量</div>
+      <div class="title top">{{ $t('fen-zu-shu-liang') }}</div>
       <div>
         <el-input-number
           v-model="groupNumber"
@@ -261,7 +261,7 @@
     </div>
 
     <div class="line">
-      <div class="title top">选择组长</div>
+      <div class="title top">{{ $t('xuan-ze-zu-chang') }}</div>
       <div>
         <el-switch
           v-model="isSelectLeader"
@@ -292,7 +292,8 @@
     font-size: 16px;
     /* font-weight: 700; */
     margin-right: 5px;
-    width: 85px;
+    min-width: 85px;
+    /* white-space: nowrap; */
   }
 
   .top {
