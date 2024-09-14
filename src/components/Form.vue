@@ -3,14 +3,13 @@
  * @Author     : itchaox
  * @Date       : 2023-09-26 15:10
  * @LastAuthor : Wang Chao
- * @LastTime   : 2024-09-14 09:26
+ * @LastTime   : 2024-09-14 09:43
  * @desc       : 
 -->
 <script setup>
   import { ref, onMounted } from 'vue';
   import { bitable, FieldType, DateFormatter } from '@lark-base-open/js-sdk';
   import { ElMessage, ElMessageBox } from 'element-plus';
-  import find from '../utils';
 
   import { useI18n } from 'vue-i18n';
 
@@ -21,37 +20,41 @@
   const fieldOptions = ref();
   const fieldId = ref();
 
-  let dateFormatList = [
-    {
-      name: 't1',
-      value: '无',
-    },
-    {
-      name: 't2',
-      value: '-',
-    },
-    {
-      name: 't3',
-      value: '_',
-    },
-    {
-      name: 't4',
-      value: '/',
-    },
-  ];
-  let dateFormat = ref();
-
   const loading = ref(false);
 
+  const lang = ref('');
   onMounted(async () => {
     const table = await base.getActiveTable();
     const view = await table.getActiveView();
     const tableMetaList = await view.getFieldMetaList();
     fieldOptions.value = tableMetaList.map((item) => ({ value: item.id, label: item.name }));
+
+    bitable.bridge.getLanguage().then((_lang) => {
+      lang.value = _lang;
+    });
   });
 
+  function getTeamName() {
+    if (['zh', 'zh-TW', 'zh-HK'].includes(lang.value)) {
+      return '团队';
+    } else if (lang.value === 'ja') {
+      return 'チーム';
+    } else {
+      return 'Team';
+    }
+  }
+
+  function getLeaderName() {
+    if (['zh', 'zh-TW', 'zh-HK'].includes(lang.value)) {
+      return '组长';
+    } else if (lang.value === 'ja') {
+      return 'チームリーダー';
+    } else {
+      return 'Team Leader';
+    }
+  }
+
   async function confirm() {
-    // debugger;
     generateBirthdayRow();
   }
 
@@ -64,7 +67,6 @@
     const table = await base.getActiveTable();
     const view = await table.getActiveView();
 
-    // const data = await table.getRecordIdListByPage({ pageSize: 200, pageToken: _pageToken }); // 获取所有记录 id
     const data = await view.getVisibleRecordIdListByPage({ pageSize: 200, pageToken: _pageToken }); // 获取所有记录 id
     const { total, hasMore, recordIds: recordIdsData, pageToken } = data;
     recordIds.push(...recordIdsData);
@@ -105,12 +107,10 @@
     loading.value = true;
 
     const table = await base.getActiveTable();
-    // const field = await table.getField(areaId.value); // 选择某个多行文本字段
 
     await getAllRecordList();
     await getAllRecordIdList();
 
-    let _list = [];
     for (let index = 0; index < recordList.length; index++) {
       const _field = await table.getFieldById(fieldId.value);
       const cell = await _field.getCell(recordList[index]?.id);
@@ -119,19 +119,6 @@
       if (!val) continue;
       const value = val[0]?.text || val;
       personList.value.push(value);
-
-      // const area = find(val[0]?.text || val);
-
-      // let format = !['无', 'none', 'なし'].includes(dateFormat.value) ? dateFormat.value : '';
-
-      // // 根据手机号码获取手机号码所属地
-      // _list.push({
-      //   recordId: recordIds[index],
-      //   fields: {
-      //     [field.id]: area.province ? area.province + format + area.city : `【${t('Wrong format of phone number')}】`,
-      //     [operatorId.value]: area.op !== '异常' ? area.op : `【${t('Wrong format of phone number')}】`,
-      //   },
-      // });
     }
 
     personList.value = shuffleArray(personList.value);
@@ -149,9 +136,9 @@
           _arr.push(
             isSelectLeader.value
               ? personList.value
-                  .slice(i * (n + 1), (i + 1) * (n + 1))
-                  .map((item, index) => (index === 0 ? item + '【组长】' : item))
-              : personList.value.slice(i * (n + 1), (i + 1) * (n + 1)),
+                  ?.slice(i * (n + 1), (i + 1) * (n + 1))
+                  ?.map((item, index) => (index === 0 ? item + `【${getLeaderName()}】` : item))
+              : personList.value?.slice(i * (n + 1), (i + 1) * (n + 1)),
           );
         } else {
           // 剩余组分配 n 个人
@@ -159,21 +146,25 @@
           const endIdx = startIdx + n;
           _arr.push(
             isSelectLeader.value
-              ? personList.value.slice(startIdx, endIdx).map((item, index) => (index === 0 ? item + '【组长】' : item))
-              : personList.value.slice(startIdx, endIdx),
+              ? personList.value
+                  ?.slice(startIdx, endIdx)
+                  ?.map((item, index) => (index === 0 ? item + `【${getLeaderName()}】` : item))
+              : personList.value?.slice(startIdx, endIdx),
           );
         }
       }
     } else if (groupRule.value === 2) {
       // 根据每组人数分组
       const n = groupNumber.value; // 每组人数
-      const groupCount = Math.ceil(personList.value.length / n); // 组数
+      const groupCount = Math.ceil(personList.value?.length / n); // 组数
 
       for (let i = 0; i < groupCount; i++) {
         _arr.push(
           isSelectLeader.value
-            ? personList.value.slice(i * n, (i + 1) * n).map((item, index) => (index === 0 ? item + '【组长】' : item))
-            : personList.value.slice(i * n, (i + 1) * n),
+            ? personList.value
+                ?.slice(i * n, (i + 1) * n)
+                ?.map((item, index) => (index === 0 ? item + `【${getLeaderName()}】` : item))
+            : personList.value?.slice(i * n, (i + 1) * n),
         );
       }
     }
@@ -182,7 +173,7 @@
       const fieldId = await table.addField({
         // 新增一个多行文本类型的字段
         type: FieldType.Text,
-        name: `团队 ${i + 1}`,
+        name: `${getTeamName()} ${i + 1}`,
       });
       const _list = [];
       for (let j = 0; j < _arr[i].length; j++) {
@@ -198,18 +189,11 @@
 
     loading.value = false;
 
-    return;
-
-    await table.setRecords(_list);
-
-    loading.value = false;
     ElMessage({
       message: t('Data processing completed'),
       type: 'success',
     });
   }
-
-  const operatorId = ref();
 
   // 分组规则
   const groupRule = ref(1);
