@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-09-26 15:10
  * @LastAuthor : Wang Chao
- * @LastTime   : 2024-09-13 23:36
+ * @LastTime   : 2024-09-14 09:26
  * @desc       : 
 -->
 <script setup>
@@ -87,6 +87,17 @@
 
   const personList = ref([]);
 
+  // Fisher-Yates 洗牌算法 来随机打乱数组中的元素，这是一种常见且高效的打乱数组的算法
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      // 在 0 到 i 之间生成一个随机索引
+      const j = Math.floor(Math.random() * (i + 1));
+      // 交换 array[i] 和 array[j]
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
   /**
    * @desc  : 生成手机号码所属地列
    */
@@ -122,6 +133,8 @@
       //   },
       // });
     }
+
+    personList.value = shuffleArray(personList.value);
 
     const _arr = [];
 
