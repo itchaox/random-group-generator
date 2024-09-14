@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-09-26 15:10
  * @LastAuthor : Wang Chao
- * @LastTime   : 2024-09-14 09:50
+ * @LastTime   : 2024-09-14 10:02
  * @desc       : 
 -->
 <script setup>
@@ -27,7 +27,11 @@
     const table = await base.getActiveTable();
     const view = await table.getActiveView();
     const tableMetaList = await view.getFieldMetaList();
-    fieldOptions.value = tableMetaList.map((item) => ({ value: item.id, label: item.name }));
+
+    // 只允许文本和人员字段
+    fieldOptions.value = tableMetaList
+      .filter((i) => i.type === 1 || i.type === 11)
+      .map((item) => ({ value: item.id, label: item.name }));
 
     bitable.bridge.getLanguage().then((_lang) => {
       lang.value = _lang;
@@ -111,13 +115,14 @@
     await getAllRecordList();
     await getAllRecordIdList();
 
+    const _field = await table.getFieldById(fieldId.value);
+
     for (let index = 0; index < recordList.length; index++) {
-      const _field = await table.getFieldById(fieldId.value);
       const cell = await _field.getCell(recordList[index]?.id);
       const val = await cell.val;
 
       if (!val) continue;
-      const value = val[0]?.text || val;
+      const value = val[0]?.text || val[0]?.name || val;
       personList.value.push(value);
     }
 
